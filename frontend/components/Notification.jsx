@@ -47,7 +47,7 @@ export default function Notification({ notification }) {
         </div>
         <div>
           <h4 className="font-medium text-text-primary">{notification.title}</h4>
-          <p className="text-text-secondary text-sm">{notification.message}</p>
+          <p className="text-text-secondary text-sm break-words">{notification.message}</p>
           <p className="text-xs text-text-secondary mt-1">
             {new Date(notification.timestamp).toLocaleString()}
           </p>

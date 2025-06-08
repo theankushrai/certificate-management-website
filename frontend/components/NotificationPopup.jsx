@@ -74,7 +74,7 @@ export default function NotificationPopup() {
       </button>
 
       {isOpen && (
-        <div className="absolute right-0 mt-2 w-96 bg-white rounded-lg shadow-lg border border-gray-200 overflow-hidden z-50">
+        <div className="absolute right-0 mt-2 w-[calc(100vw-2rem)] max-w-md sm:w-96 bg-white rounded-lg shadow-lg border border-gray-200 overflow-hidden z-50">
           <div className="p-4 border-b border-gray-200">
             <div className="flex justify-between items-center">
               <h3 className="text-lg font-semibold text-text-primary">Notifications</h3>

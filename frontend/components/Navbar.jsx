@@ -6,16 +6,15 @@ import NotificationPopup from './NotificationPopup';
 
 export default function Navbar() {
   return (
-    <nav className="fixed top-0 left-0 right-0 z-50 bg-primary-500 text-white shadow-lg">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="flex items-center justify-between h-16">
-          <Link 
-            to="/" 
-            className="flex items-center space-x-3 hover:bg-primary-600 px-3 py-2 rounded-md transition-colors"
-          >
-            <FontAwesomeIcon icon={faBars} className="h-5 w-5" />
-            <span className="text-xl font-bold">Certificate Manager</span>
-          </Link>
+    <nav className="fixed top-0 left-0 right-0 z-50 bg-primary-500 text-white shadow-lg px-2 sm:px-4">
+      <div className="max-w-7xl mx-auto flex items-center justify-between h-16">
+        <div className="flex items-center space-x-1 ml-1">
+          <FontAwesomeIcon icon={faBars} className="h-5 w-5" />
+        </div>
+        <div className="flex-1 text-center">
+          <span className="text-xl font-bold">Certificate Manager</span>
+        </div>
+        <div className="flex items-center justify-end">
           <Link to="/notifications" className="relative">
             <NotificationPopup />
           </Link>

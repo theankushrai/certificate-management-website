@@ -41,14 +41,14 @@ export default function CertificateTable() {
   return (
     <div className="bg-bg-light rounded-lg shadow-md overflow-hidden">
       <div className="p-6">
-        <div className="flex justify-between items-center mb-6">
+        <div className="flex flex-col gap-4 mb-6 sm:flex-row sm:justify-between sm:items-center">
           <h2 className="text-xl font-semibold text-text-primary">Certificates</h2>
           <Link 
             to="/certificates/new" 
-            className="bg-primary-500 hover:bg-primary-600 text-white px-4 py-2 rounded-md flex items-center space-x-2 transition-colors"
+            className="bg-primary-500 hover:bg-primary-600 text-white px-4 py-2 rounded-md flex items-center space-x-2 transition-colors self-start sm:self-auto"
           >
             <FontAwesomeIcon icon={faRotate} className="w-4 h-4" />
-            <span>Create New</span>
+            <span className="hidden sm:inline">Create New</span>
           </Link>
         </div>
 
