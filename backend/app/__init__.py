@@ -9,8 +9,20 @@ def create_app(config_class=Config):
     # Load configuration
     app.config.from_object(config_class)
     
-    # Enable CORS
-    CORS(app)
+    # Enable CORS for all routes
+    CORS(app, resources={
+        r"/api/*": {
+            "origins": [
+                "http://localhost:3000",
+                "http://127.0.0.1:3000",
+                "http://localhost:5173",
+                "http://127.0.0.1:5173"
+            ],
+            "methods": ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
+            "allow_headers": ["Content-Type", "Authorization"]
+        }
+    })
+
     
     # Initialize database connection here (we'll add this later)
     

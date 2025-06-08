@@ -1,8 +1,15 @@
+import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 import Homepage from "../pages/Homepage";
-function App() {
+import CertificateCreateForm from "../components/CertificateCreateForm";
 
+function App() {
   return (
-    <Homepage/>
+    <Router>
+      <Routes>
+        <Route path="/" element={<Homepage />} />
+        <Route path="/certificates/new" element={<CertificateCreateForm />} />
+      </Routes>
+    </Router>
   );
 }
 
