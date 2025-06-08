@@ -41,3 +41,5 @@ ENV/
 *.egg-info/
 .installed.cfg
 *.egg
+.env
+!.env-example
