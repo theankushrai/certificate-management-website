@@ -1,7 +1,4 @@
-import Footer from "../components/Footer";
-import Navbar from "../components/navbar";
-import CertificateTable from "../components/CertificateTable";
-
+import {Footer,Navbar,CertificateTable} from "../components";
 export default function Homepage() {
     return (
         <>
