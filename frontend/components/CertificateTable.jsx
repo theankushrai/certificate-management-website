@@ -1,28 +1,21 @@
 import React, { useState, useEffect } from 'react';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faRotate, faTrash, faEye } from '@fortawesome/free-solid-svg-icons';
-import { getCertificates, deleteCertificate, rotateCertificate } from '../services/api';
+import { getCertificates, deleteCertificate, rotateCertificate, getCertificate } from '../services/api';
 import { Link } from 'react-router-dom';
+import CertificateViewModal from './CertificateViewModal';
 
 
-function getStatusColor(status) {
-  switch (status) {
-    case 'active':
-      return 'bg-success text-white';
-    case 'expired':
-      return 'bg-error text-white';
-    case 'warning':
-      return 'bg-warning text-white';
-    default:
-      return 'bg-gray-200 text-gray-800';
-  }
-}
+// Status colors now directly in the component using Tailwind config colors
+// Using primary, secondary, success, warning, error, dark, light from config
 
 export default function CertificateTable() {
   const [certificates, setCertificates] = useState([]);
   const [loading, setLoading] = useState(true);
   // Track which certificates are being rotated to prevent double rotate
   const [rotating, setRotating] = useState({});
+  // Track which certificate is being viewed
+  const [viewingCertificateId, setViewingCertificateId] = useState(null);
 
   const fetchCertificates = async () => {
     try {
@@ -76,75 +69,93 @@ export default function CertificateTable() {
   }
 
   return (
-    <div className="bg-bg-light rounded-lg shadow-md overflow-hidden">
+    <div className="bg-gray-800 rounded-lg shadow-md overflow-hidden">
       <div className="p-6">
         <div className="flex flex-col gap-4 mb-6 sm:flex-row sm:justify-between sm:items-center">
-          <h2 className="text-xl font-semibold text-text-primary">Certificates</h2>
+          <h2 className="text-2xl font-bold text-white">Certificates</h2>
           <Link
             to="/certificates/new"
-            className="bg-primary-500 hover:bg-primary-600 text-white px-4 py-2 rounded-md flex items-center space-x-2 transition-colors self-start sm:self-auto"
+            className="bg-primary-500 hover:bg-primary-400 text-white px-4 py-2 text-sm font-medium rounded-md flex items-center space-x-2 transition-colors self-start sm:self-auto"
           >
             <FontAwesomeIcon icon={faRotate} className="w-4 h-4" />
             <span className="hidden sm:inline">Create New</span>
           </Link>
         </div>
 
+        {/* Certificate View Modal */}
+        {viewingCertificateId && (
+          <CertificateViewModal 
+            certificateId={viewingCertificateId}
+            onClose={() => setViewingCertificateId(null)}
+          />
+        )}
+
         <div className="overflow-x-auto">
-          <table className="min-w-full">
-            <thead className="bg-bg-default">
+          <table className="min-w-full divide-y divide-gray-200">
+            <thead className="bg-gray-700">
               <tr>
-                <th className="px-6 py-3 text-left text-xs font-medium text-text-secondary uppercase tracking-wider">
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-300 uppercase tracking-wider">
                   Domain
                 </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-text-secondary uppercase tracking-wider">
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-300 uppercase tracking-wider">
                   Common Name
                 </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-text-secondary uppercase tracking-wider">
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-300 uppercase tracking-wider">
                   Issuer
                 </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-text-secondary uppercase tracking-wider">
+                <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-300 uppercase tracking-wider">
                   Status
                 </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-text-secondary uppercase tracking-wider">
-                  Expires
+                <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-300 uppercase tracking-wider">
+                  Fingerprint
                 </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-text-secondary uppercase tracking-wider">
+                <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-300 uppercase tracking-wider">
+                  Valid Until
+                </th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-300 uppercase tracking-wider">
                   Actions
                 </th>
               </tr>
             </thead>
-            <tbody className="bg-bg-default divide-y divide-gray-200">
+            <tbody className="bg-gray-800 divide-y divide-gray-700">
               {certificates.length > 0 ? (
                 certificates.map((cert) => (
-                  <tr key={cert.id} className="hover:bg-gray-50">
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-text-primary">
+                  <tr key={cert.id} className="hover:bg-gray-700 transition-colors">
+                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-200">
                       {cert.domain_name}
                     </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-text-secondary">
+                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-300">
                       {cert.common_name}
                     </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-text-secondary">
+                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-300">
                       {cert.issuer}
                     </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm">
-                      <span className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${getStatusColor(cert.status)}`}>
+                    <td className="px-6 py-4 whitespace-nowrap">
+                      <span className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${
+                        cert.status === 'active' ? 'bg-success text-white' :
+                        cert.status === 'expired' ? 'bg-error text-white' :
+                        'bg-warning text-white'
+                      }`}>
                         {cert.status}
                       </span>
                     </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-text-secondary">
+                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-400 font-mono truncate max-w-xs">
+                      {cert.fingerprint_sha256 ? `${cert.fingerprint_sha256.substring(0, 12)}...` : 'N/A'}
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-300">
                       {new Date(cert.valid_until).toLocaleDateString()}
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
-                      <div className="flex space-x-2">
+                      <div className="flex space-x-3">
                         <button
-                          className="text-primary-500 hover:text-primary-600 transition-colors"
+                          className="text-secondary-400 hover:text-secondary-300 transition-colors"
                           title="View Details"
-                          onClick={() => {/* View details */}}
+                          onClick={() => setViewingCertificateId(cert.id)}
                         >
                           <FontAwesomeIcon icon={faEye} className="w-4 h-4" />
                         </button>
                         <button
-                          className={`text-success hover:text-success-dark transition-colors ${rotating[cert.id] ? 'opacity-50 cursor-not-allowed' : ''}`}
+                          className={`text-success hover:text-success-300 transition-colors ${rotating[cert.id] ? 'opacity-50 cursor-not-allowed' : ''}`}
                           title="Rotate"
                           onClick={() => handleRotate(cert.id)}
                           disabled={rotating[cert.id]}
@@ -152,7 +163,7 @@ export default function CertificateTable() {
                           <FontAwesomeIcon icon={faRotate} className="w-4 h-4" />
                         </button>
                         <button
-                          className="text-error hover:text-error-dark transition-colors"
+                          className="text-red-400 hover:text-red-300 transition-colors"
                           title="Delete"
                           onClick={() => handleDelete(cert.id)}
                         >
@@ -164,7 +175,7 @@ export default function CertificateTable() {
                 ))
               ) : (
                 <tr>
-                  <td colSpan="6" className="px-6 py-4 text-center text-sm text-text-secondary">
+                  <td colSpan="6" className="px-6 py-4 text-center text-sm text-gray-400">
                     No certificates found
                   </td>
                 </tr>
