@@ -63,6 +63,7 @@ export const getCertificates = async () => {
 
 export const getCertificate = async (id) => {
   try {
+    // The response interceptor will return response.data
     return await api.get(`/certificates/${id}`);
   } catch (error) {
     throw error;
@@ -71,6 +72,7 @@ export const getCertificate = async (id) => {
 
 export const createCertificate = async (certificateData) => {
   try {
+    // The response interceptor will return response.data
     return await api.post('/certificates', certificateData);
   } catch (error) {
     throw error;
@@ -79,6 +81,7 @@ export const createCertificate = async (certificateData) => {
 
 export const updateCertificate = async (id, certificateData) => {
   try {
+    // The response interceptor will return response.data
     return await api.put(`/certificates/${id}`, certificateData);
   } catch (error) {
     throw error;
@@ -95,8 +98,8 @@ export const deleteCertificate = async (id) => {
 
 export const rotateCertificate = async (id) => {
     try {
-      const response = await api.post(`/certificates/${id}/rotate`);
-      return response.data;
+      // The response interceptor will return response.data
+      return await api.post(`/certificates/${id}/rotate`);
     } catch (error) {
       throw error;
     }
