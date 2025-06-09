@@ -171,7 +171,7 @@ export default function CertificateTable() {
                             onClick={() => handleRotate(cert.certificate_id)}
                             disabled={rotating[cert.certificate_id]}
                           >
-                            <FontAwesomeIcon icon={faPlus} className="w-4 h-4" />
+                            <FontAwesomeIcon icon={faRotate} className="w-4 h-4" />
                           </button>
                           <button
                             className="text-red-400 hover:text-red-300 transition-colors"
