@@ -7,10 +7,10 @@ const API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
 const API_KEY = import.meta.env.VITE_API_KEY;
 
 if (!API_BASE_URL) {
-  console.error('[API] Missing API_BASE_URL');
+  console.error('[API] Missing VITE_API_BASE_URL');
 }
 if (!API_KEY) {
-  console.warn('[API] Missing API_KEY (API requests will fail if required by backend)');
+  console.warn('[API] Missing VITE_API_KEY (API requests will fail if required by backend)');
 }
 
 // Create axios instance
@@ -27,9 +27,12 @@ api.interceptors.request.use(
     if (API_KEY) {
       config.headers['x-api-key'] = API_KEY;
     }
-    // Log outgoing request
-    if (process.env.NODE_ENV === 'development') {
-      console.log(`[API] ${config.method?.toUpperCase()} ${config.url}`, config);
+    // Log outgoing request (Vite-specific way to check for dev mode)
+    if (import.meta.env.DEV) {
+      console.log(
+        `[API] Request: ${config.method?.toUpperCase()} ${config.baseURL ? config.baseURL : ''}${config.url}`,
+        'Headers:', config.headers
+      );
     }
     return config;
   },
