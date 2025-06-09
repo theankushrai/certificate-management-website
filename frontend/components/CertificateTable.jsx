@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faPlus, faTrash, faEye } from '@fortawesome/free-solid-svg-icons';
+import { faPlus,faRotate, faTrash, faEye } from '@fortawesome/free-solid-svg-icons';
 import { getCertificates, deleteCertificate, rotateCertificate, getCertificate } from '../services/api';
 import { Link } from 'react-router-dom';
 import CertificateViewModal from './CertificateViewModal';
