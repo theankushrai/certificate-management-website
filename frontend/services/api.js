@@ -4,8 +4,8 @@ import axios from 'axios';
 // Logs all function calls and responses for debugging
 
 // Use Amplify/React env vars
-const API_BASE_URL = process.env.API_BASE_URL;
-const API_KEY = process.env.API_KEY;
+const API_BASE_URL = process.env.REACT_APP_API_BASE_URL;
+const API_KEY = process.env.REACT_APP_API_KEY;
 
 if (!API_BASE_URL) {
   console.error('[API] Missing API_BASE_URL');
