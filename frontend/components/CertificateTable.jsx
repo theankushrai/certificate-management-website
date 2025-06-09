@@ -22,7 +22,7 @@ export default function CertificateTable() {
       setLoading(true);
       const response = await getCertificates();
       console.log('[CertificateTable] Raw response from getCertificates:', response); // Log the raw response
-      setCertificates(response || []);
+      setCertificates(response.data || []); // 'response' is an object like { data: [...] }, so we need response.data
     } catch (err) {
       console.error(err);
       setCertificates([]);
