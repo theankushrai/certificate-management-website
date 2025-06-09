@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faRotate, faTrash, faEye } from '@fortawesome/free-solid-svg-icons';
+import { faPlus, faTrash, faEye } from '@fortawesome/free-solid-svg-icons';
 import { getCertificates, deleteCertificate, rotateCertificate, getCertificate } from '../services/api';
 import { Link } from 'react-router-dom';
 import CertificateViewModal from './CertificateViewModal';
@@ -84,9 +84,11 @@ export default function CertificateTable() {
             to="/certificates/new"
             className="bg-primary-500 hover:bg-primary-400 text-white px-4 py-2 text-sm font-medium rounded-md flex items-center space-x-2 transition-colors self-start sm:self-auto"
           >
-            <FontAwesomeIcon icon={faRotate} className="w-4 h-4" />
+            <FontAwesomeIcon icon={faPlus} className="w-4 h-4" />
+            <span className="sm:hidden">Add</span>
             <span className="hidden sm:inline">Create New</span>
-          </Link>
+</Link>
+
         </div>
 
         {/* Certificate View Modal */}
@@ -169,7 +171,7 @@ export default function CertificateTable() {
                             onClick={() => handleRotate(cert.certificate_id)}
                             disabled={rotating[cert.certificate_id]}
                           >
-                            <FontAwesomeIcon icon={faRotate} className="w-4 h-4" />
+                            <FontAwesomeIcon icon={faPlus} className="w-4 h-4" />
                           </button>
                           <button
                             className="text-red-400 hover:text-red-300 transition-colors"
