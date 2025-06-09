@@ -2,10 +2,9 @@ import axios from 'axios';
 
 // API service for Certificate Manager
 // Logs all function calls and responses for debugging
-
-// Use Amplify/React env vars
-const API_BASE_URL = process.env.REACT_APP_API_BASE_URL;
-const API_KEY = process.env.REACT_APP_API_KEY;
+// Use Vite's way of accessing env variables
+const API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
+const API_KEY = import.meta.env.VITE_API_KEY;
 
 if (!API_BASE_URL) {
   console.error('[API] Missing API_BASE_URL');
