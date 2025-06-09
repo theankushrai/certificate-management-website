@@ -42,10 +42,10 @@ api.interceptors.request.use(
 // Add a response interceptor to handle errors
 api.interceptors.response.use(
   (response) => {
-    if (process.env.NODE_ENV === 'development') {
-      console.log('[API] Response:', response);
+    if (import.meta.env.DEV) { // Use Vite's way to check for development mode
+      console.log('[API] Response Data:', response.data);
     }
-    return response.data ? response : response;
+    return response.data; // Directly return the data payload from the response
   },
   (error) => {
     console.error('[API] Error:', error.response?.data || error.message);

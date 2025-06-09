@@ -21,7 +21,7 @@ export default function CertificateTable() {
     try {
       setLoading(true);
       const response = await getCertificates();
-      setCertificates(response.data || []);
+      setCertificates(response || []);
     } catch (err) {
       console.error(err);
       setCertificates([]);
