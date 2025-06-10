@@ -1,3 +1,116 @@
-/* Add any global custom styles here if needed. 
-   For a Tailwind CSS-first approach, most styles should be handled by utility classes. 
-*/
+/* src/App.css */
+
+/* 1. Import Bootstrap first */
+@import 'bootstrap/dist/css/bootstrap.min.css';
+
+/* 2. Define CSS variables for theming in the :root selector (defaulting to light mode) */
+:root {
+  /* Primary Colors */
+  --bs-primary: #0d6efd; /* Default Bootstrap blue */
+  --bs-primary-rgb: 13, 110, 253;
+  --bs-primary-light: #a1c9ff;
+  --bs-primary-dark: #0a58ca;
+
+  /* Background and Text Colors */
+  --bs-body-bg: #ffffff; /* White background */
+  --bs-body-color: #212529; /* Dark text */
+  --bs-secondary-bg: #f8f9fa; /* Light gray for secondary backgrounds */
+  --bs-tertiary-bg: #e9ecef;
+
+  /* Border Colors */
+  --bs-border-color: #dee2e6;
+
+  /* Custom App-Specific Variables */
+  --app-navbar-bg: var(--bs-body-bg);
+  --app-card-bg: var(--bs-body-bg);
+  --app-link-color: var(--bs-primary);
+  --app-link-hover-color: var(--bs-primary-dark);
+}
+
+/* 3. Define overrides for dark mode using a class on the body */
+.dark-mode {
+  /* Primary Colors */
+  --bs-primary: #6ea8fe; /* A lighter, more vibrant blue for dark mode */
+  --bs-primary-rgb: 110, 168, 254;
+  --bs-primary-light: #a1c9ff;
+  --bs-primary-dark: #4d8ff0;
+
+  /* Background and Text Colors */
+  --bs-body-bg: #121212; /* Very dark gray, almost black */
+  --bs-body-color: #e0e0e0; /* Light gray text for readability */
+  --bs-secondary-bg: #1e1e1e; /* Slightly lighter gray for secondary elements */
+  --bs-tertiary-bg: #2a2a2a;
+
+  /* Border Colors */
+  --bs-border-color: #444444;
+
+  /* Text Colors */
+  --bs-secondary-color: #adb5bd; /* Lighter gray for muted text, ensuring contrast */
+
+  /* Custom App-Specific Variables */
+  --app-navbar-bg: var(--bs-secondary-bg);
+  --app-card-bg: var(--bs-secondary-bg);
+  --app-link-color: var(--bs-primary);
+  --app-link-hover-color: var(--bs-primary-light);
+
+  /* Override Bootstrap component variables for dark mode */
+  --bs-table-bg: var(--bs-secondary-bg);
+  --bs-table-color: var(--bs-body-color);
+  --bs-table-striped-bg: var(--bs-tertiary-bg);
+  --bs-table-border-color: var(--bs-border-color);
+  --bs-modal-bg: var(--bs-secondary-bg);
+  --bs-modal-header-border-color: var(--bs-border-color);
+  --bs-modal-footer-border-color: var(--bs-border-color);
+  --bs-card-bg: var(--bs-secondary-bg);
+  --bs-card-border-color: var(--bs-border-color);
+  --bs-list-group-bg: var(--bs-secondary-bg);
+  --bs-list-group-border-color: var(--bs-border-color);
+  --bs-list-group-color: var(--bs-body-color);
+  --bs-form-control-bg: var(--bs-tertiary-bg);
+  --bs-form-control-color: var(--bs-body-color);
+  --bs-form-control-border-color: var(--bs-border-color);
+
+  /*
+    Force-theme native dropdown options, which often ignore standard styles.
+    !important is used here to override stubborn browser-default stylesheets.
+  */
+  .form-select option {
+    background: var(--bs-tertiary-bg) !important;
+    color: var(--bs-body-color) !important;
+  }
+
+  /* Style placeholder text for dark mode for better visibility */
+  .form-control::placeholder {
+    color: #6c757d;
+  }
+
+  /* Ensure even disabled form controls have readable text and correct background */
+  .form-control:disabled, .form-control[readonly] {
+    background-color: #2a2a2a;
+    opacity: 0.7;
+  }
+
+  /* Add styles for form validation states in dark mode */
+  --bs-form-invalid-color: #ff8a80; /* Lighter red for invalid feedback */
+  --bs-form-invalid-border-color: #ff8a80;
+  --bs-form-valid-color: #80ffbf; /* Lighter green for valid feedback */
+  --bs-form-valid-border-color: #80ffbf;
+
+  /* Add styles for alert variants in dark mode */
+  --bs-danger-bg-subtle: #2c1a1a;
+  --bs-danger-text: #ff8a80;
+  --bs-success-bg-subtle: #1a2c21;
+  --bs-success-text: #80ffbf;
+  --bs-warning-bg-subtle: #2c271a;
+  --bs-warning-text: #ffd180;
+
+
+}
+
+/* 4. Ensure body takes full height for proper background display */
+body {
+  min-height: 100vh;
+  background-color: var(--bs-body-bg);
+  color: var(--bs-body-color);
+  transition: background-color 0.3s ease, color 0.3s ease;
+}

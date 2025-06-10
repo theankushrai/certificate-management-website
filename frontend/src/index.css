@@ -1,24 +1,30 @@
-@import url('https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css');
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
 
-/* Your custom styles below */
+@layer base {
+  :root {
+    --color-primary: 19 78 74;    /* Teal */
+    --color-secondary: 59 130 246; /* Blue */
+    --color-success: 16 185 129;  /* Emerald */
+    --color-warning: 245 158 11;  /* Amber */
+    --color-error: 239 68 68;     /* Red */
+    --color-dark: 31 41 55;       /* Gray-800 */
+    --color-light: 249 250 251;   /* Gray-50 */
+  }
 
-:root {
-  font-family: system-ui, Avenir, Helvetica, Arial, sans-serif;
-  line-height: 1.5;
-  font-weight: 400;
+  body {
+    @apply bg-gray-50 text-gray-900 dark:bg-gray-900 dark:text-gray-100 transition-colors duration-200;
+    font-family: 'Inter', system-ui, -apple-system, sans-serif;
+  }
 
-  color-scheme: light dark;
-  color: rgba(255, 255, 255, 0.87);
-  background-color: #242424;
+  h1, h2, h3, h4, h5, h6 {
+    @apply font-semibold;
+  }
 
-  font-synthesis: none;
-  text-rendering: optimizeLegibility;
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
-}
-
-a {
-  font-weight: 500;
+  a {
+    @apply text-primary-600 hover:text-primary-700 dark:text-primary-400 dark:hover:text-primary-300 transition-colors;
+    font-weight: 500;
   color: #646cff;
   text-decoration: inherit;
 }

@@ -1,64 +1,39 @@
 import React from 'react';
-import { Link } from 'react-router-dom';
+import { Container, Row, Col } from 'react-bootstrap';
+import { Github, Twitter, Linkedin } from 'react-bootstrap-icons';
+import { useTheme } from '../src/contexts/ThemeContext';
 
 export default function Footer() {
   const currentYear = new Date().getFullYear();
-  
+
+  const { isDarkMode } = useTheme();
+
   return (
-    <footer className="bg-primary-900 text-white py-8 w-full text-sm">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-8">
-          {/* Company Info */}
-          <div className="text-center md:text-left">
-            <h3 className="text-lg font-semibold mb-4">Certificate Manager</h3>
-            <p className="text-gray-300">
-              Secure and manage your SSL/TLS certificates with ease.
-            </p>
-          </div>
-
-          {/* Quick Links */}
-          <div className="text-center md:text-left">
-            <h4 className="text-base font-semibold mb-4">Quick Links</h4>
-            <ul className="space-y-2">
-              <li><Link to="/" className="text-gray-300 hover:text-white transition-colors">Home</Link></li>
-              <li><Link to="/certificates" className="text-gray-300 hover:text-white transition-colors">Certificates</Link></li>
-              <li><Link to="/settings" className="text-gray-300 hover:text-white transition-colors">Settings</Link></li>
-              <li><Link to="/help" className="text-gray-300 hover:text-white transition-colors">Help</Link></li>
-            </ul>
-          </div>
-
-          {/* Contact */}
-          <div className="text-center md:text-left">
-            <h4 className="text-base font-semibold mb-4">Contact</h4>
-            <ul className="space-y-2 text-gray-300">
-              <li>Email: support@certmanager.com</li>
-              <li>Phone: (123) 456-7890</li>
-              <li>123 Security St, Webville</li>
-            </ul>
-          </div>
-
-          {/* Social Links */}
-          <div className="text-center md:text-left">
-            <h4 className="text-base font-semibold mb-4">Follow Us</h4>
-            <div className="flex space-x-4 justify-center md:justify-start">
-              <a href="#" className="text-gray-300 hover:text-white transition-colors" aria-label="Twitter">
-                <i className="fab fa-twitter text-xl"></i>
-              </a>
-              <a href="#" className="text-gray-300 hover:text-white transition-colors" aria-label="GitHub">
-                <i className="fab fa-github text-xl"></i>
-              </a>
-              <a href="#" className="text-gray-300 hover:text-white transition-colors" aria-label="LinkedIn">
-                <i className="fab fa-linkedin text-xl"></i>
-              </a>
-            </div>
-          </div>
-        </div>
-        
-        {/* Copyright */}
-        <div className="border-t border-primary-700 mt-8 pt-6 text-center text-text-secondary text-sm">
-          <p>&copy; {currentYear} Certificate Manager. All rights reserved.</p>
-        </div>
-      </div>
+    <footer 
+      className={`mt-auto py-3 ${isDarkMode ? 'bg-dark' : 'bg-light'}`}
+      style={{
+        borderTop: isDarkMode ? '1px solid #444' : '1px solid #dee2e6',
+        color: isDarkMode ? '#adb5bd' : '#6c757d'
+      }}
+    >
+      <Container>
+        <Row>
+          <Col md={6} className="text-center text-md-start mb-2 mb-md-0">
+            <small>&copy; {currentYear} Certificate Manager. All rights reserved.</small>
+          </Col>
+          <Col md={6} className="text-center text-md-end">
+            <a href="https://github.com/theankushrai/certificate-management-website" target="_blank" rel="noopener noreferrer" className="text-muted me-3">
+              <Github size={20} className={isDarkMode ? 'text-light' : 'text-muted'} />
+            </a>
+            <a href="https://twitter.com/theankushrai" target="_blank" rel="noopener noreferrer" className="text-muted me-3">
+              <Twitter size={20} className={isDarkMode ? 'text-light' : 'text-muted'} />
+            </a>
+            <a href="https://linkedin.com/in/theankushrai" target="_blank" rel="noopener noreferrer" className="text-muted">
+              <Linkedin size={20} className={isDarkMode ? 'text-light' : 'text-muted'} />
+            </a>
+          </Col>
+        </Row>
+      </Container>
     </footer>
   );
 }

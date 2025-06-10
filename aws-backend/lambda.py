@@ -4,6 +4,7 @@ import uuid
 from datetime import datetime, timedelta, timezone
 from boto3.dynamodb.conditions import Key
 import os
+from decimal import Decimal # Import Decimal type
 
 # Initialize DynamoDB client
 dynamodb = boto3.resource('dynamodb')
@@ -12,6 +13,17 @@ table = dynamodb.Table(table_name)
 
 # Define the maximum number of certificates allowed in the table
 MAX_CERTIFICATES = 10 
+
+# Helper function to handle Decimal types for JSON serialization
+def decimal_default_encoder(obj):
+    if isinstance(obj, Decimal):
+        # Check if it's an integer or float, then convert accordingly
+        if obj % 1 == 0:
+            return int(obj)
+        else:
+            return float(obj)
+    # Revert to default JSON encoder for other types
+    raise TypeError(repr(obj) + " is not JSON serializable")
 
 def get_headers():
     """Return consistent headers for all responses for CORS"""
@@ -34,13 +46,17 @@ def success_response(status_code, data=None, message=None):
     """Helper function to create consistent success responses"""
     body = {}
     if data is not None:
+        # Use our custom encoder when dumping data to JSON
         body['data'] = data
     if message:
         body['message'] = message
+    
+    # Apply custom encoder for all JSON dumping
+    # This ensures any Decimal values in the response data are handled
     return {
         'statusCode': status_code,
         'headers': get_headers(),
-        'body': json.dumps(body) if body else None
+        'body': json.dumps(body, default=decimal_default_encoder) if body else None
     }
 
 def lambda_handler(event, context):
@@ -132,13 +148,14 @@ def get_all_certificates():
         try:
             print("6. Attempting to scan table...")
             response = table.scan()
-            # Ensure proper serialization for logging complex objects
-            print(f"7. Scan response received: {json.dumps(response, default=str)}")
+            # This line caused the error when dumping 'response' directly due to Decimal objects.
+            # We will now handle Decimal serialization in the success_response helper.
+            print(f"7. Scan response received. Items count: {response.get('Count', 0)}") 
             
             items = response.get('Items', [])
             print(f"8. Found {len(items)} items")
             
-            return success_response(200, items)
+            return success_response(200, items) # `items` will now be properly serialized by success_response
             
         except Exception as e:
             print(f"9. Error during scan: {str(e)}")
@@ -162,7 +179,8 @@ def get_certificate(certificate_id):
             print(f"Certificate with ID {certificate_id} not found.")
             return error_response(404, 'Certificate not found')
             
-        print(f"Found certificate: {json.dumps(items[0], default=str)}")
+        # `items[0]` might contain Decimal, so we rely on success_response to handle it.
+        print(f"Found certificate: {json.dumps(items[0], default=decimal_default_encoder)}") 
         return success_response(200, items[0])
     except Exception as e:
         print(f"Error getting certificate {certificate_id}: {str(e)}")
@@ -171,7 +189,7 @@ def get_certificate(certificate_id):
 def create_certificate(cert_data):
     """
     Create a new certificate in DynamoDB.
-    Enforces a maximum number of certificates and sets a TTL for 1 day.
+    Enforces a maximum number of certificates and sets a TTL for 1 hour.
     """
     try:
         if not isinstance(cert_data, dict) or not cert_data.get('domain_name'):
@@ -179,8 +197,6 @@ def create_certificate(cert_data):
 
         # --- START: Enforce 10-item limit ---
         print("Checking current item count in table for creation limit...")
-        # Use a consistent read for the count if strict limit is needed (though scan might not be consistent by default)
-        # For a hard limit like this, a scan is typically sufficient and easier.
         response = table.scan(
             Select='COUNT' # Only retrieve the count, not the actual items
         )
@@ -195,8 +211,8 @@ def create_certificate(cert_data):
         cert_id = str(uuid.uuid4())
         now_utc = datetime.now(timezone.utc)
         
-        # --- START: TTL Logic - set ttl_timestamp for 1 day from now ---
-        expiry_time = now_utc + timedelta(days=1)
+        # --- START: TTL Logic - set ttl_timestamp for 1 hour from now ---
+        expiry_time = now_utc + timedelta(hours=1) # Set to 1 hour
         # Convert to Unix epoch timestamp in seconds (integer)
         ttl_timestamp_seconds = int(expiry_time.timestamp())
         print(f"New certificate will expire at (TTL): {expiry_time.isoformat()} ({ttl_timestamp_seconds} Unix epoch seconds)")
@@ -215,7 +231,7 @@ def create_certificate(cert_data):
             'created_at': now_utc.isoformat(),
             'updated_at': now_utc.isoformat(),
             'metadata': cert_data.get('metadata', {}),
-            'ttl_timestamp': ttl_timestamp_seconds # <--- NEW: TTL attribute for automatic deletion
+            'ttl_timestamp': ttl_timestamp_seconds # TTL attribute for automatic deletion
         }
         
         table.put_item(Item=certificate)
@@ -248,7 +264,7 @@ def rotate_certificate(certificate_id):
         now_utc = datetime.now(timezone.utc)
         
         # --- START: TTL Logic for the new rotated certificate ---
-        expiry_time = now_utc + timedelta(days=1)
+        expiry_time = now_utc + timedelta(hours=1) # Set to 1 hour
         ttl_timestamp_seconds = int(expiry_time.timestamp())
         print(f"New rotated certificate will expire at (TTL): {expiry_time.isoformat()} ({ttl_timestamp_seconds} Unix epoch seconds)")
         # --- END: TTL Logic ---
@@ -266,15 +282,16 @@ def rotate_certificate(certificate_id):
             'created_at': now_utc.isoformat(),
             'updated_at': now_utc.isoformat(),
             'metadata': old_cert.get('metadata', {}),
-            'ttl_timestamp': ttl_timestamp_seconds # <--- NEW: TTL attribute for rotated item
+            'ttl_timestamp': ttl_timestamp_seconds # TTL attribute for rotated item
         }
         
         # Use a transaction (batch_writer) for atomic put and delete
         with table.batch_writer() as batch:
             batch.put_item(Item=new_cert)
+            # Ensure the old item is deleted using its complete primary key
             batch.delete_item(
                 Key={
-                    'user_id': old_cert['user_id'], # Ensure user_id is used for deletion as it's the PK
+                    'user_id': old_cert['user_id'], 
                     'certificate_id': certificate_id
                 }
             )
@@ -315,5 +332,4 @@ def delete_certificate(certificate_id):
         
     except Exception as e:
         print(f"Error deleting certificate {certificate_id}: {str(e)}")
-        # Corrected the extra text after return statement
         return error_response(500, 'Failed to delete certificate')
