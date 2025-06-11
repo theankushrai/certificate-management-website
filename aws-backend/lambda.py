@@ -155,6 +155,24 @@ def get_all_certificates():
             items = response.get('Items', [])
             print(f"8. Found {len(items)} items")
             
+            # Recalculate status for each certificate based on current date
+            for item in items:
+                try:
+                    print(f"\nProcessing certificate: {item.get('certificate_id', 'unknown')}")
+                    print(f"Current status in DB: {item.get('status', 'not set')}")
+                    print(f"Valid from: {item.get('valid_from', 'not set')}")
+                    print(f"Valid until: {item.get('valid_until', 'not set')}")
+                    
+                    # Update the status based on current date and validity period
+                    item['status'] = calculate_status(
+                        item.get('valid_from', ''),
+                        item.get('valid_until', '')
+                    )
+                    print(f"New calculated status: {item['status']}")
+                except Exception as e:
+                    print(f"Error updating status for certificate {item.get('certificate_id', 'unknown')}: {str(e)}")
+                    item['status'] = 'active'  # Default to active if there's an error
+            
             return success_response(200, items) # `items` will now be properly serialized by success_response
             
         except Exception as e:
@@ -218,16 +236,26 @@ def create_certificate(cert_data):
         print(f"New certificate will expire at (TTL): {expiry_time.isoformat()} ({ttl_timestamp_seconds} Unix epoch seconds)")
         # --- END: TTL Logic ---
 
+        # Get the validity dates
+        valid_from = cert_data.get('valid_from', now_utc.isoformat())
+        valid_until = cert_data.get('valid_until', (now_utc + timedelta(days=365)).isoformat())
+        
+        # Log the dates being used for status calculation
+        print(f"Creating certificate with dates - valid_from: {valid_from}, valid_until: {valid_until}")
+        
+        # Calculate the status based on the provided dates
+        status = calculate_status(valid_from, valid_until)
+        print(f"Calculated status for new certificate: {status}")
+        
         certificate = {
             'user_id': 'default', # Using 'default' as partition key, adjust if users are implemented
             'certificate_id': cert_id,
             'domain_name': cert_data['domain_name'],
             'common_name': cert_data.get('common_name', cert_data['domain_name']),
             'issuer': cert_data.get('issuer', 'Let\'s Encrypt'),
-            'valid_from': cert_data.get('valid_from', now_utc.isoformat()),
-            'valid_until': cert_data.get('valid_until', 
-                (now_utc + timedelta(days=365)).isoformat()), # Application-level validity
-            'status': 'active',
+            'valid_from': valid_from,
+            'valid_until': valid_until,
+            'status': status,
             'created_at': now_utc.isoformat(),
             'updated_at': now_utc.isoformat(),
             'metadata': cert_data.get('metadata', {}),
@@ -269,6 +297,17 @@ def rotate_certificate(certificate_id):
         print(f"New rotated certificate will expire at (TTL): {expiry_time.isoformat()} ({ttl_timestamp_seconds} Unix epoch seconds)")
         # --- END: TTL Logic ---
 
+        # Calculate the new validity period (1 year from now)
+        new_valid_from = now_utc.isoformat()
+        new_valid_until = (now_utc + timedelta(days=365)).isoformat()
+        
+        # Log the dates being used for status calculation
+        print(f"Rotating certificate with dates - valid_from: {new_valid_from}, valid_until: {new_valid_until}")
+        
+        # Calculate the status based on the new dates
+        status = calculate_status(new_valid_from, new_valid_until)
+        print(f"Calculated status for rotated certificate: {status}")
+        
         new_cert_id = str(uuid.uuid4())
         new_cert = {
             'user_id': old_cert['user_id'],
@@ -276,9 +315,9 @@ def rotate_certificate(certificate_id):
             'domain_name': old_cert['domain_name'],
             'common_name': old_cert.get('common_name', old_cert['domain_name']),
             'issuer': old_cert.get('issuer', 'Let\'s Encrypt'),
-            'valid_from': now_utc.isoformat(),
-            'valid_until': (now_utc + timedelta(days=365)).isoformat(),
-            'status': 'active',
+            'valid_from': new_valid_from,
+            'valid_until': new_valid_until,
+            'status': status,
             'created_at': now_utc.isoformat(),
             'updated_at': now_utc.isoformat(),
             'metadata': old_cert.get('metadata', {}),
@@ -302,6 +341,63 @@ def rotate_certificate(certificate_id):
     except Exception as e:
         print(f"Error rotating certificate {certificate_id}: {str(e)}")
         return error_response(500, 'Failed to rotate certificate')
+
+def calculate_status(valid_from_str, valid_until_str):
+    """
+    Calculate the status of a certificate based on current date and validity period.
+    Returns:
+    - 'expired' if the current date is after valid_until
+    - 'warning' if the certificate expires within 90 days
+    - 'active' for all other valid certificates
+    """
+    try:
+        # Get current time in UTC with timezone
+        now = datetime.now(timezone.utc)
+        print(f"Current time (UTC): {now.isoformat()}")
+        print(f"Valid until string: {valid_until_str}")
+        
+        # Parse the valid_until date and ensure it's timezone-aware in UTC
+        valid_until_str = valid_until_str.replace('Z', '+00:00')  # Handle 'Z' timezone
+        try:
+            valid_until = datetime.fromisoformat(valid_until_str)
+            # If the datetime is naive (no timezone), assume it's in UTC
+            if valid_until.tzinfo is None:
+                valid_until = valid_until.replace(tzinfo=timezone.utc)
+                print(f"Assumed timezone-naive date as UTC: {valid_until.isoformat()}")
+            else:
+                print(f"Parsed timezone-aware date: {valid_until.isoformat()}")
+        except ValueError as e:
+            print(f"Error paarsing date {valid_until_str}: {str(e)}")
+            return 'active'  # Default to active on parse error
+            
+        # Ensure both datetimes are timezone-aware before comparison
+        if valid_until.tzinfo is None:
+            valid_until = valid_until.replace(tzinfo=timezone.utc)
+            
+        # Calculate days until expiry
+        time_until_expiry = valid_until - now
+        days_until_expiry = time_until_expiry.days
+        
+        # Log the comparison
+        print(f"Now (UTC): {now.isoformat()}")
+        print(f"Valid until: {valid_until.isoformat()}")
+        print(f"Days until expiry: {days_until_expiry}")
+        
+        # Check if certificate is expired
+        if now > valid_until:
+            print("Status: expired")
+            return 'expired'
+            
+        # Check if certificate is expiring soon (within 90 days)
+        if days_until_expiry <= 90:
+            print("Status: warning - expiring soon")
+            return 'warning'
+            
+        print("Status: active")
+        return 'active'
+    except Exception as e:
+        print(f"Error calculating status: {str(e)}")
+        return 'active'  # Default to active if there's an error
 
 def delete_certificate(certificate_id):
     """Delete a certificate from DynamoDB"""
