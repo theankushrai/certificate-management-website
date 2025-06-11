@@ -21,10 +21,26 @@ export default function CertificateCreateForm() {
 
   const handleChange = (e) => {
     const { name, value } = e.target;
-    setFormData(prev => ({
-      ...prev,
-      [name]: value
-    }));
+    
+    setFormData(prev => {
+      // If valid_from is being updated, also update valid_until to be 1 year later
+      if (name === 'valid_from' && value) {
+        const oneYearLater = new Date(value);
+        oneYearLater.setFullYear(oneYearLater.getFullYear() + 1);
+        const formattedDate = oneYearLater.toISOString().split('T')[0];
+        
+        return {
+          ...prev,
+          [name]: value,
+          valid_until: formattedDate
+        };
+      }
+      
+      return {
+        ...prev,
+        [name]: value
+      };
+    });
   };
 
   const handleSubmit = async (e) => {
